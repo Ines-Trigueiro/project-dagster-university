@@ -1,6 +1,6 @@
 # src/dagster_essentials/defs/assets/trips.py
 import requests
-# from dagster_essentials.defs.assets import constants
+from dagster_essentials.defs.assets import constants
 import dagster as dg
 
 @dg.asset
@@ -15,3 +15,4 @@ def taxi_trips_file() -> None:
 
     with open(constants.TAXI_TRIPS_TEMPLATE_FILE_PATH.format(month_to_fetch), "wb") as output_file:
         output_file.write(raw_trips.content)
+
