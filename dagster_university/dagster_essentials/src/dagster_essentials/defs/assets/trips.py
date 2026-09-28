@@ -18,12 +18,12 @@ def taxi_trips_file() -> None:
 
 @dg.asset
 def taxi_zones_file() -> None:
-    '''
-        The raw CSV file for the taxi zones dataset. Sourced from the NYC Open Data portal.
-    '''
-    taxi_zone = requests.get(
-        f"https://community-engineering-artifacts.s3.us-west-2.amazonaws.com/dagster-university/data/taxi_zones.csv"
+    """
+      The raw CSV file for the taxi zones dataset. Sourced from the NYC Open Data portal.
+    """
+    raw_taxi_zones = requests.get(
+        "https://community-engineering-artifacts.s3.us-west-2.amazonaws.com/dagster-university/data/taxi_zones.csv"
     )
 
     with open(constants.TAXI_ZONES_FILE_PATH, "wb") as output_file:
-        output_file.write(taxi_zone.content)
+        output_file.write(raw_taxi_zones.content)
