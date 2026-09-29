@@ -57,7 +57,7 @@ def taxi_trips() -> None:
         );
     """
 
-    conn = backoff(
+    conn = backoff( #ensures that multiple assets can use DuckDB safely without locking resources
         fn=duckdb.connect,
         retry_on=(RuntimeError, duckdb.IOException),
         kwargs={
