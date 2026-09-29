@@ -68,7 +68,7 @@ def taxi_trips() -> None:
     conn.execute(query)
 
 @dg.asset(
-    deps= ["taxi_zones_file"]
+    deps=["taxi_zones_file"]
 )
 def taxi_zones() -> None:
     query = f'''
@@ -78,8 +78,8 @@ def taxi_zones() -> None:
                 zone,
                 borough,
                 the_geom as geometry
-            FROM {constants.TAXI_ZONES_FILE_PATH}  
-        )
+            FROM '{constants.TAXI_ZONES_FILE_PATH}'
+        );
     '''
     conn = backoff(
         fn=duckdb.connect,
