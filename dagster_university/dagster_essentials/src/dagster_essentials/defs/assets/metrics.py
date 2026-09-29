@@ -10,5 +10,8 @@ from dagster_essentials.defs.assets import constants
 
 
 
-@dg.asset
-def metrics(context: dg.AssetExecutionContext) -> dg.MaterializeResult: ...
+@dg.asset(
+    deps=["taxi_trips", "taxi_zones"]
+)
+def manhattan_stats() -> None:
+
