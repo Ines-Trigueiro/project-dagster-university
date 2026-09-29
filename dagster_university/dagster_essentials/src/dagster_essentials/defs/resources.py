@@ -1,3 +1,4 @@
+# src/dagster_essentials/defs/resources.py
 import dagster as dg
 from dagster_duckdb import DuckDBResource
 
