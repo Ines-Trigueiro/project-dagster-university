@@ -1,10 +1,8 @@
 # src/dagster_essentials/defs/assets/trips.py
 import requests
 from dagster_essentials.defs.assets import constants
-import duckdb
-import os
+from dagster_duckdb import DuckDBResource
 import dagster as dg
-from dagster._utils.backoff import backoff
 
 
 @dg.asset
@@ -36,7 +34,7 @@ def taxi_zones_file() -> None:
 @dg.asset(
     deps=["taxi_trips_file"]
 )
-def taxi_trips() -> None:
+def taxi_trips(database: DuckDBResource) -> None:
     """
       The raw taxi trips dataset, loaded into a DuckDB database
     """
@@ -57,20 +55,13 @@ def taxi_trips() -> None:
         );
     """
 
-    conn = backoff( #ensures that multiple assets can use DuckDB safely without locking resources
-        fn=duckdb.connect,
-        retry_on=(RuntimeError, duckdb.IOException),
-        kwargs={
-            "database": os.getenv("DUCKDB_DATABASE"),
-        },
-        max_retries=10,
-    )
-    conn.execute(query)
+    with database.get_connection() as conn:
+        conn.execute(query)
 
 @dg.asset(
     deps=["taxi_zones_file"]
 )
-def taxi_zones() -> None:
+def taxi_zones(database: DuckDBResource) -> None:
     query = f'''
         CREATE OR REPLACE TABLE zones AS (
             SELECT
@@ -81,13 +72,7 @@ def taxi_zones() -> None:
             FROM '{constants.TAXI_ZONES_FILE_PATH}'
         );
     '''
-    conn = backoff(
-        fn=duckdb.connect,
-        retry_on=(RuntimeError, duckdb.IOException),
-        kwargs={
-            "database": os.getenv("DUCKDB_DATABASE"),
-        },
-        max_retries=10,
-    )
-    conn.execute(query)
+
+    with database.get_connection() as conn:
+        conn.execute(query)
     
