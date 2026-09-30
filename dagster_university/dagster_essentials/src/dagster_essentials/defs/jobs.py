@@ -4,13 +4,14 @@ from dagster_essentials.defs.partitions import monthly_partition, weekly_partiti
 
 
 trips_by_week = dg.AssetSelection.assets(["trips_by_week"])
+adhoc_request = dg.AssetSelection.assets(["adhoc_request"])
 
 # selects all assets using AssetSelection.all() and 
 # then omit trips_by_week by subtracting its selection
 trip_update_job = dg.define_asset_job(
     name="trip_update_job",
     partitions_def=monthly_partition,
-    selection=dg.AssetSelection.all() - trips_by_week
+    selection=dg.AssetSelection.all() - trips_by_week - adhoc_request
 )
 
 weekly_update_job = dg.define_asset_job(
@@ -19,3 +20,7 @@ weekly_update_job = dg.define_asset_job(
     selection = trips_by_week
 )
 
+adhoc_request_job = dg.define_asset_job(
+    name="adhoc_request_job",
+    selection=adhoc_request,
+)
