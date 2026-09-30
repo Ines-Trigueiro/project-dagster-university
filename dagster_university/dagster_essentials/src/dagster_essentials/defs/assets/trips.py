@@ -1,16 +1,23 @@
 # src/dagster_essentials/defs/assets/trips.py
 import requests
 from dagster_essentials.defs.assets import constants
+from dagster_essentials.defs.partitions import monthly_partition
 from dagster_duckdb import DuckDBResource
 import dagster as dg
 
 
-@dg.asset
-def taxi_trips_file() -> None:
+@dg.asset(
+    partitions_def=monthly_partition
+) # the context argument provides metadata about the current materialization
+def taxi_trips_file(context: dg.AssetExecutionContext) -> None: 
     """
       The raw parquet files for the taxi trips dataset. Sourced from the NYC Open Data portal.
     """
-    month_to_fetch = '2023-03'
+    # dynamically fetch a specific partition’s month of data
+    partition_date_str = context.partition_key
+    #Slice the string to make it match the format expected by our source system 'YYYY-MM-DD' -> 'YYYY-MM'
+    month_to_fetch = partition_date_str[:-3]
+
     raw_trips = requests.get(
         f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{month_to_fetch}.parquet"
     )
