@@ -56,13 +56,14 @@ def manhattan_map() -> None:
 
 @dg.asset(
     deps=["taxi_trips"],
-    partitions_def = weekly_partition,
+    partitions_def=weekly_partition
 )
 def trips_by_week(context: dg.AssetExecutionContext, database: DuckDBResource) -> None:
+    """
+      The number of trips per week, aggregated by week.
+    """
 
     period_to_fetch = context.partition_key
-
-    result = pd.DataFrame()
 
     # get all trips for the week
     query = f"""
