@@ -19,7 +19,3 @@ weekly_update_job = dg.define_asset_job(
     selection = trips_by_week
 )
 
-
-@dg.job
-def jobs():
-    pass
