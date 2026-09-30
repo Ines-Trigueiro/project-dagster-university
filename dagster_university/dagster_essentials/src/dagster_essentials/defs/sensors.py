@@ -17,9 +17,11 @@ def adhoc_request_sensor(context: dg.SensorEvaluationContext):
     )
 
     # define the cursor
-    # context argument stores the cursor used to manage the state # of what the sensor has already looked at. 
+    # context argument stores the cursor used to manage the state 
+    # of what the sensor has already looked at. 
     # The cursor may or may not exist, depending on if the sensor has previously had a tick run.
-    # To accommodate for this, we check if context.cursor exists and if it does, convert its string value into JSON
+    # To accommodate for this, we check if context.cursor exists and if it does, 
+    # convert its string value into JSON
     previous_state = json.loads(context.cursor) if context.cursor else {}
     # We also initialize the current_state to an empty object, 
     # which we’ll use to override the cursor after it reads through the directory.
