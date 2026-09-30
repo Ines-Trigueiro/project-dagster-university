@@ -28,31 +28,32 @@ def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> None:
 
     # count the number of trips that picked up in a given borough, aggregated by time of day and hour of day
     query = f"""
-        SELECT
-            date_part('hour', pickup_datetime) as hour_of_day,
-            date_part('dayofweek', pickup_datetime) as day_of_week_num,
-            case date_part('dayofweek', pickup_datetime)
-                when 0 then 'Sunday'
-                when 1 then 'Monday'
-                when 2 then 'Tuesday'
-                when 3 then 'Wednesday'
-                when 4 then 'Thursday'
-                when 5 then 'Friday'
-                when 6 then 'Saturday'
-            end as day_of_week,
-            count(*) as num_trips
-        FROM trips
-        SELECT JOIN zones ON trips.pickup_zone_id = zones.zone_id
-        WHERE pickup_datetime >= '{config.start_date}'
-            AND pickup_datetime < '{config.end_date}'
-            AND pickup_zone_id IN (
-                select zone_id
-                from zones
-                where borough = '{config.borough}'
-            )
-        GROUP BY hour_of_day, day_of_week_num
-        ORDER BY hour_of_day, day_of_week_num ASC
-        """
+        select
+          date_part('hour', pickup_datetime) as hour_of_day,
+          date_part('dayofweek', pickup_datetime) as day_of_week_num,
+          case date_part('dayofweek', pickup_datetime)
+            when 0 then 'Sunday'
+            when 1 then 'Monday'
+            when 2 then 'Tuesday'
+            when 3 then 'Wednesday'
+            when 4 then 'Thursday'
+            when 5 then 'Friday'
+            when 6 then 'Saturday'
+          end as day_of_week,
+          count(*) as num_trips
+        from trips
+        left join zones on trips.pickup_zone_id = zones.zone_id
+        where pickup_datetime >= '{config.start_date}'
+        and pickup_datetime < '{config.end_date}'
+        and pickup_zone_id in (
+          select zone_id
+          from zones
+          where borough = '{config.borough}'
+        )
+        group by 1, 2
+        order by 1, 2 asc
+    """
+
     with database.get_connection() as conn:
         results = conn.execute(query).fetch_df()
 
