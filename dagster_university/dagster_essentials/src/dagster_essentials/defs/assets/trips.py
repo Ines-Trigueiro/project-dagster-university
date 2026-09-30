@@ -11,7 +11,7 @@ import dagster as dg
 ) # the context argument provides metadata about the current materialization
 def taxi_trips_file(context: dg.AssetExecutionContext) -> None: 
     """
-      The raw parquet files for the taxi trips dataset. Sourced from the NYC Open Data portal.
+    The raw parquet files for the taxi trips dataset. Sourced from the NYC Open Data portal.
     """
     # dynamically fetch a specific partition’s month of data
     partition_date_str = context.partition_key
@@ -39,43 +39,36 @@ def taxi_zones_file() -> None:
 
 
 @dg.asset(
-    deps=["taxi_trips_file"],
-    partitions_def= monthly_partition,
+  deps=["taxi_trips_file"],
+  partitions_def=monthly_partition,
 )
 def taxi_trips(context: dg.AssetExecutionContext, database: DuckDBResource) -> None:
-    """
-      The raw taxi trips dataset, loaded into a DuckDB database
-    """
-    partition_date_str = context.partition_key
-    month_to_fetch = partition_date_str[:-3]
+  """
+    The raw taxi trips dataset, loaded into a DuckDB database, partitioned by month.
+  """
 
-    query = f"""
-        CREATE OR REPLACE TABLE trips AS (
-          SELECT
-            vendor_id integer,
-            pickup_zone_id integer,
-            dropoff_zone_id integer,
-            rate_code_id double, 
-            payment_type integer,
-            dropoff_datetime timestamp,
-            pickup_datetime timestamp, 
-            trip_distance double, 
-            passenger_count double,
-            total_amount double, 
-            partition_date varchar
-        )
-        -- Delete any old data from partition_date to prevent duplicates when backfilling
-        DELETE FROM trips WHERE partition_date = '{month_to_fetch}'; 
-        -- Insert new records from the month’s parquet file
-        INSERT INTO trips
-            SELECT
-                VendorID, PULocationID, DOLocationID, RatecodeID, payment_type, tpep_dropoff_datetime,
-                tpep_pickup_datetime, trip_distance, passenger_count, total_amount, '{month_to_fetch}' as partition_date
-            FROM '{constants.TAXI_TRIPS_TEMPLATE_FILE_PATH.format(month_to_fetch)}';
-    """
+  partition_date_str = context.partition_key
+  month_to_fetch = partition_date_str[:-3]
 
-    with database.get_connection() as conn:
-        conn.execute(query)
+  query = f"""
+    CREATE TABLE IF NOT EXISTS trips (
+      vendor_id integer, pickup_zone_id integer, dropoff_zone_id integer,
+      rate_code_id double, payment_type integer, dropoff_datetime timestamp,
+      pickup_datetime timestamp, trip_distance double, passenger_count double,
+      total_amount double, partition_date varchar
+    );
+
+    DELETE FROM trips WHERE partition_date = '{month_to_fetch}';
+
+    INSERT INTO trips
+    SELECT
+      VendorID, PULocationID, DOLocationID, RatecodeID, payment_type, tpep_dropoff_datetime,
+      tpep_pickup_datetime, trip_distance, passenger_count, total_amount, '{month_to_fetch}' as partition_date
+    FROM '{constants.TAXI_TRIPS_TEMPLATE_FILE_PATH.format(month_to_fetch)}';
+  """
+
+  with database.get_connection() as conn:
+      conn.execute(query)
 
 @dg.asset(
     deps=["taxi_zones_file"]
