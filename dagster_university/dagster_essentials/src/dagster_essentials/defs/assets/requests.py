@@ -42,7 +42,7 @@ def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> None:
             end as day_of_week,
             count(*) as num_trips
         FROM trips
-        LECT JOIN zones ON trips.pickup_zone_id = zones.zone_id
+        SELECT JOIN zones ON trips.pickup_zone_id = zones.zone_id
         WHERE pickup_datetime >= '{config.start_date}'
             AND pickup_datetime < '{config.end_date}'
             AND pickup_zone_id IN (
