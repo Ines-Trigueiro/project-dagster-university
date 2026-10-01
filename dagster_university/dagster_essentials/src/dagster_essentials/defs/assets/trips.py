@@ -37,7 +37,7 @@ def taxi_trips_file(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
 
 
 @dg.asset(
-    group_name="raw_files"
+    group_name="raw_files",
 )
 def taxi_zones_file() -> dg.MaterializeResult:
     """
@@ -49,14 +49,13 @@ def taxi_zones_file() -> dg.MaterializeResult:
 
     with open(constants.TAXI_ZONES_FILE_PATH, "wb") as output_file:
         output_file.write(raw_taxi_zones.content)
-
-    num_rows = len(pd.read_parquet(constants.TAXI_ZONES_FILE_PATH))
+    num_rows = len(pd.read_csv(constants.TAXI_ZONES_FILE_PATH))
 
     return dg.MaterializeResult(
         metadata={
-            'Number of records' : dg.MetadataValue.int(num_rows)
-
-    })
+            'Number of records': dg.MetadataValue.int(num_rows)
+        }
+    )
 
 @dg.asset(
   deps=["taxi_trips_file"],
