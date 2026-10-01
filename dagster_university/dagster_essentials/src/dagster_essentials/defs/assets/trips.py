@@ -39,7 +39,7 @@ def taxi_trips_file(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
 @dg.asset(
     group_name="raw_files"
 )
-def taxi_zones_file() -> None:
+def taxi_zones_file() -> dg.MaterializeResult:
     """
       The raw CSV file for the taxi zones dataset. Sourced from the NYC Open Data portal.
     """
@@ -50,6 +50,13 @@ def taxi_zones_file() -> None:
     with open(constants.TAXI_ZONES_FILE_PATH, "wb") as output_file:
         output_file.write(raw_taxi_zones.content)
 
+    num_rows = len(pd.read_parquet(constants.TAXI_TRIPS_TEMPLATE_FILE_PATH.format(month_to_fetch)))
+
+    return dg.MaterializeResult(
+        metadata={
+            'Number of records' : dg.MetadataValue.int(num_rows)
+
+    })
 
 @dg.asset(
   deps=["taxi_trips_file"],
