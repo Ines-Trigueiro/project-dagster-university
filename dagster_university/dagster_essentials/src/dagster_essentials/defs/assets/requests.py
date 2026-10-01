@@ -15,7 +15,8 @@ class AdhocRequestConfig(dg.Config):
     end_date: str
 
 @dg.asset(
-    deps=["taxi_zones", "taxi_trips"]
+    deps=["taxi_zones", "taxi_trips"],
+    group_name="requests",
 )
 def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> None:
     """
