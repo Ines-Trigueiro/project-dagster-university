@@ -3,6 +3,7 @@ import dagster as dg
 from dagster_duckdb import DuckDBResource
 
 import matplotlib.pyplot as plt
+import base64
 
 from dagster_essentials.defs.assets import constants
 
@@ -18,7 +19,7 @@ class AdhocRequestConfig(dg.Config):
     deps=["taxi_zones", "taxi_trips"],
     group_name="requests",
 )
-def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> None:
+def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> dg.MaterializeResult:
     """
       The response to an request made in the `requests` directory.
       See `requests/README.md` for more information.
@@ -26,6 +27,9 @@ def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> None:
 
     # strip the file extension from the filename, and use it as the output filename
     file_path = constants.REQUEST_DESTINATION_TEMPLATE_FILE_PATH.format(config.filename.split('.')[0])
+
+    with open(file_path, 'rb') as file:
+            image_data = file.read()
 
     # count the number of trips that picked up in a given borough, aggregated by time of day and hour of day
     query = f"""
@@ -74,3 +78,12 @@ def adhoc_request(config: AdhocRequestConfig, database: DuckDBResource) -> None:
     
     plt.savefig(file_path)
     plt.close(fig)
+
+    base64_data = base64.b64encode(image_data).decode('utf-8')
+    md_content = f"![Image](data:image/jpeg;base64,{base64_data})"
+    
+    return dg.MaterializeResult(
+        metadata={
+            "preview": dg.MetadataValue.md(md_content)
+        }
+    )
