@@ -50,7 +50,7 @@ def taxi_zones_file() -> dg.MaterializeResult:
     with open(constants.TAXI_ZONES_FILE_PATH, "wb") as output_file:
         output_file.write(raw_taxi_zones.content)
 
-    num_rows = len(pd.read_parquet(constants.TAXI_TRIPS_TEMPLATE_FILE_PATH.format(month_to_fetch)))
+    num_rows = len(pd.read_parquet(constants.TAXI_ZONES_FILE_PATH))
 
     return dg.MaterializeResult(
         metadata={
