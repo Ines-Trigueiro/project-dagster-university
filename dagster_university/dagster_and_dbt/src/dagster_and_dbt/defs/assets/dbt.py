@@ -13,6 +13,8 @@ class CustomizedDagsterDbtTranslator(DagsterDbtTranslator):
             return dg.AssetKey(f"taxi_{name}")
         else:
             return super().get_asset_key(dbt_resource_props)
+    def get_group_name(self, dbt_resource_props):
+        return dbt_resource_props["fqn"][1]
 
         
 @dbt_assets(
